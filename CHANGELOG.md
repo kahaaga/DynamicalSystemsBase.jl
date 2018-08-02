@@ -1,3 +1,45 @@
+Changelog of `DynamicalSystemsBase`.
+
+# master
+## New Features
+* `orthonormal` is 100x more performant. 
+
+# 0.11.0
+
+## Breaking
+* Dropped support of Julia versions < 0.7
+* `Reconstruction` does not exist anymore. Instead, `reconstruct` is used in it's
+  place. The function now also always returns a `Dataset`.
+* In the `reconstruct` function, `D` now stands for the number of temporal neighbors
+  which is **one less** than the dimensionality of the reconstructed space.
+    *  This change was done because it is more intuitive and more scalable when considering multiple timeseries or spatio temporal timeseries.
+
+
+* Re-worked the internals of `DynamicalSystem` (although the API remained the same): Now `DynamicalSystem` only stores what is absolutely necessary and creates directly integrators when need be. A "problem" is not stored anymore.
+This also lead to re-working of how keyword arguments are handled. I am
+very happy to say that these changes reduced *tremendously* the source code!
+
+## New Features
+* Exported a 3-argument `reinit!(integ, u0::AbstractVector, Q0::AbstractMatrix)` that takes `Q0` as the third argument
+  and reinits safely any integrator.
+
+* `reconstruct` creates internally a subtype of `AbstractEmbedding`. These objects can be used as functors to create the `i`-th reconstructed vector on demand. This also improved the source code clarity significantly.
+
+* `tangent_` and `parallel_integrator` can now accept callbacks for continuous systems. In general you could pass to the constructors any keyword acceptable by `init` of DiffEq.
+
+# v0.10
+
+*some of the following changes are breaking*
+
+* `state` function no longer exists and has been merged into `get_state`.
+* Created specialized tangent integrator for discrete systems, which is about
+  20% faster. This is a "breaking" change.
+* Created functions `get_state`, `get_deviations`, `set_state!` and
+  `set_deviations!` that always correctly return either the system
+  state or the deviation vectors (in a form of a matrix) from *any* integrator!!!
+* Dynamical Systems with matrices as states are no longer available.
+* Added note in reconstruction about how many temporal neighbors there are.
+
 # v0.9
 * Theiler window is now part of the `neighborhood` function
 * Methods that estimate parameters for `Reconstruction` have moved back to

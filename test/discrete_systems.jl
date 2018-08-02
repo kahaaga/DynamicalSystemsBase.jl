@@ -1,5 +1,5 @@
 using DynamicalSystemsBase
-using Base.Test, StaticArrays
+using Test, StaticArrays
 using DynamicalSystemsBase: DDS, DS
 
 println("\nTesting discrete system evolution...")
@@ -7,8 +7,8 @@ println("\nTesting discrete system evolution...")
 @testset "Logistic Map" begin
 
   d1 = Systems.logistic(0.1)
-  d2 = DDS(d1.prob.f, 0.1, d1.prob.p)
-  d3 = DDS(d1.prob.f, big(0.1), d1.prob.p, d1.jacobian)
+  d2 = DDS(d1.f, 0.1, d1.p)
+  d3 = DDS(d1.f, big(0.1), d1.p, d1.jacobian)
 
   @testset "trajectory" begin
     ts1 = trajectory(d1, 100)
@@ -29,8 +29,8 @@ end
 @testset "Henon map" begin
 
   d1 = Systems.henon()
-  d2 = DDS(d1.prob.f, state(d1), d1.prob.p)
-  d3 = DDS(d1.prob.f, big.(state(d1)), d1.prob.p, d1.jacobian)
+  d2 = DDS(d1.f, get_state(d1), d1.p)
+  d3 = DDS(d1.f, big.(get_state(d1)), d1.p, d1.jacobian)
 
   @testset "trajectory" begin
     ts1 = trajectory(d1, 100)
@@ -52,7 +52,7 @@ end
     M = 5; ks = 0.5ones(M); Γ = 0.05;
     ds = Systems.coupledstandardmaps(M, 0.1rand(2M); ks=ks, Γ = Γ)
 
-    u0 = copy(state(ds))
+    u0 = copy(get_state(ds))
     data = trajectory(ds, 100)
     @test u0 != data[end]
 
