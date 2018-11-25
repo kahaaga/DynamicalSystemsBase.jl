@@ -30,7 +30,7 @@ function reinit!(integ::MDI, u = integ.u, Q0 = nothing)
     return
 end
 
-@inline function (integ::MinimalDiscreteIntegrator)(t::Real)
+function (integ::MinimalDiscreteIntegrator)(t::Real)
     if t == integ.t
         return integ.u
     else
@@ -273,17 +273,18 @@ end
 #                                Pretty-Printing                                    #
 #####################################################################################
 Base.summary(ds::MDI) =
-"Discrete integrator (e.o.m.: $(nameof(ds.f)))"
+"Discrete integrator (e.o.m.: $(eomstring(ds.f)))"
 Base.summary(ds::MDI{true, S}) where {S<:Vector{<:AbstractArray}} =
-"Discrete parallel integrator with $(length(ds.u)) states"
+"Discrete parallel integrator with $(length(ds.u)) states "*
+"(e.o.m.: $(eomstring(ds.f)))"
 
 function Base.show(io::IO, ds::MDI)
     ps = 3
     text = summary(ds)
-    print(io, text*"\n",
-    rpad(" t: ", ps)*"$(ds.t)\n",
-    rpad(" u: ", ps)*"$(ds.u)\n"
-    )
+    println(io, text)
+    println(io, rpad(" t: ", ps)*"$(ds.t)")
+    prefix = rpad(" u: ", ps)
+    print(io, prefix); printlimited(io, get_state(ds)', Δx = length(prefix)); print(io, "\n")
 end
 function Base.show(io::IO, ds::MDI{true, S}) where {S<:Vector{<:AbstractArray}}
     ps = 3
@@ -299,16 +300,17 @@ function Base.show(io::IO, ds::MDI{true, S}) where {S<:Vector{<:AbstractArray}}
 end
 
 Base.summary(ds::TDI) =
-"Discrete tangent-space integrator
-(e.o.m.: $(nameof(ds.f)), jacobian: $(nameof(ds.jacobian)))"
+"Discrete tangent-space integrator "*
+"(e.o.m.: $(eomstring(ds.f)), jacobian: $(eomstring(ds.jacobian)))"
 
 function Base.show(io::IO, ds::TDI)
     ps = 3
     text = summary(ds)
-    print(io, text*"\n",
-    rpad(" t: ", ps)*"$(ds.t)\n",
-    rpad(" u: ", ps)*"$(get_state(ds))\n",
-    " deviation vectors:\n")
+    println(io, text)
+    println(io, rpad(" t: ", ps)*"$(ds.t)")
+    prefix = rpad(" u: ", ps)
+    print(io, prefix); printlimited(io, get_state(ds)', Δx = length(prefix)); print(io, "\n")
+    println(io, " deviation vectors:")
     s = sprint(io -> show(IOContext(io, :limit=>true),
     MIME"text/plain"(), get_deviations(ds)))
     s = join(split(s, '\n')[2:end], '\n')
